@@ -1,0 +1,1 @@
+Autentikasi web menggunakan pdo php. Saya membangun program ini untuk contekan saya, kode di masa depan, dan menggunakan konsep pdo ketika saya membangun sistem autentikasi web aplikasi menggunakan pdo php.
