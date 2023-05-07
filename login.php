@@ -56,7 +56,7 @@ if (isset($_SESSION['login'])) {
 
                 // menyimpan nilai pada session untuk mengidentifikasi pengguna yang telah login
                 $_SESSION['username'] = $result['username'];
-                $_SESSION['identify'] = $result['username'];
+                $_SESSION['identity'] = $result['username'];
                 $_SESSION['login'] = true;
 
                 // mengatur cookie jika pengguna memilih opsi "remember me"
