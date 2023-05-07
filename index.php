@@ -7,7 +7,7 @@ if (!isset($_SESSION['login']) && !isset($_SESSION['username'])) {
 } else {
 
     session_regenerate_id();
-    $identify_username = $_SESSION['identify'];
+    $identity_username = $_SESSION['identity'];
 }
 ?>
 
