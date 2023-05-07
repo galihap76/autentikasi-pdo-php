@@ -24,7 +24,7 @@ if (!isset($_SESSION['login']) && !isset($_SESSION['username'])) {
 
 <body>
 
-    Nama pengguna Anda adalah : <?php echo $identify_username; ?>
+    Nama pengguna Anda adalah : <?php echo $identity_username; ?>
     <br>
     <br>
 
