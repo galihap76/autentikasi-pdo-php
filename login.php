@@ -7,7 +7,7 @@ if (isset($_SESSION['login'])) {
 
     // paksa pengguna ke halaman index.php
     header('Location: index.php');
-    exit();
+    die();
 }
 ?>
 
