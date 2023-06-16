@@ -7,7 +7,7 @@ if (isset($_SESSION['login'])) {
 
     // paksa pengguna ke halaman index.php
     header('Location: index.php');
-    exit();
+    die();
 }
 ?>
 
@@ -55,7 +55,7 @@ if (isset($_SESSION['login'])) {
         if ($stmt_check->rowCount() > 0) {
 
             // Panggil fungsi tutupKoneksi() untuk menutup koneksi ke database, dan tampilkan pesan error dengan menggunakan library Swal
-            tutupKoneksi($stmt_check, $conn);
+            tutupKoneksi($conn);
             echo "<script>
         Swal.fire(
             'GAGAL',
@@ -72,7 +72,7 @@ if (isset($_SESSION['login'])) {
 
             // Jika proses penyimpanan berhasil, panggil fungsi tutupKoneksi() untuk menutup koneksi ke database, dan redirect ke halaman login.php
             if ($stmt_insert->execute()) {
-                tutupKoneksi($stmt_insert, $conn);
+                tutupKoneksi($conn);
                 $_SESSION['success'] = true;
                 header('Location: login.php');
             }
