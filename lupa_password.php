@@ -7,7 +7,7 @@ if (isset($_SESSION['login'])) {
 
     // paksa pengguna ke halaman index.php
     header('Location: index.php');
-    exit();
+    die();
 }
 ?>
 
@@ -58,7 +58,7 @@ if (isset($_SESSION['login'])) {
         if ($result === false) {
 
             // panggil fungsi tutupKoneksi dan tampilkan pesan gagal menggunakan SweetAlert
-            tutupKoneksi($stmt_check, $conn);
+            tutupKoneksi($conn);
 
             echo "<script>
         Swal.fire(
@@ -70,7 +70,8 @@ if (isset($_SESSION['login'])) {
         } else if ($password !== $password2) {
 
             // tampilkan pesan gagal menggunakan SweetAlert jika password tidak sama dengan konfirmasi password
-            tutupKoneksi($stmt_check, $conn);
+            // dan tutup koneksi
+            tutupKoneksi($conn);
 
             echo "<script>
         Swal.fire(
@@ -82,7 +83,7 @@ if (isset($_SESSION['login'])) {
         } else if ($stmt_update->rowCount() > 0) {
 
             // panggil fungsi tutupKoneksi, set session success_change, dan redirect ke halaman login jika query update berhasil
-            tutupKoneksi($stmt_update, $conn);
+            tutupKoneksi($conn);
 
             $_SESSION['success_change'] = true;
             header('Location: login.php');
