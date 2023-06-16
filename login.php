@@ -68,14 +68,14 @@ if (isset($_SESSION['login'])) {
                 }
 
                 // tutup koneksi database
-                tutupKoneksi($stmt, $conn);
+                tutupKoneksi($conn);
 
                 // mengarahkan pengguna ke halaman index setelah login berhasil
                 header("Location: index.php");
             } else {
 
                 // tutup koneksi database
-                tutupKoneksi($stmt, $conn);
+                tutupKoneksi($conn);
 
                 // menampilkan pesan error jika password yang dimasukkan salah
                 echo "<script>
@@ -89,7 +89,7 @@ if (isset($_SESSION['login'])) {
         } else {
 
             // tutup koneksi database
-            tutupKoneksi($stmt, $conn);
+            tutupKoneksi($conn);
 
             // menampilkan pesan error jika username tidak ditemukan
             echo "<script>
