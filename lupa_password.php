@@ -94,7 +94,7 @@ if (isset($_SESSION['login'])) {
             // Cek jika berhasil di update
         } else if ($stmt_update->rowCount() > 0) {
 
-            // Set session success_change, dan redirect ke halaman login
+            // Set session dan redirect ke halaman login
             $_SESSION['forgot_username'] = $username;
             $_SESSION['forgot_password'] = $password;
             $_SESSION['success_change'] = true;
