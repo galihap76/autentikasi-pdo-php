@@ -1,13 +1,13 @@
 <?php
 session_start();
-require_once 'db.php';
+include 'db.php';
 
-// cek jika sudah login
+// Cek jika sudah login
 if (isset($_SESSION['login'])) {
 
-    // paksa pengguna ke halaman index.php
+    // Paksa pengguna ke halaman index.php
     header('Location: index.php');
-    die();
+    exit();
 }
 ?>
 
@@ -34,60 +34,75 @@ if (isset($_SESSION['login'])) {
 <body>
 
     <?php
-    // cek apakah tombol 'ubah' sudah ditekan pada form sebelumnya
+
+    // Cek apakah tombol 'ubah' sudah ditekan pada form sebelumnya
     if (isset($_POST['ubah'])) {
 
-        // dapatkan data username, password, dan konfirmasi password dari form
-        $username = strip_tags(htmlentities($_POST['username']));
-        $password = strip_tags(htmlentities($_POST['password']));
-        $password2 = strip_tags(htmlentities($_POST['password2']));
+        // Function sanitize input
+        function sanitizeInput($data)
+        {
+            $data = trim($data);
+            $data = stripslashes($data);
+            $data = htmlspecialchars($data);
+            return $data;
+        }
+
+        // Dapatkan data username, password, dan konfirmasi password dari form
+        $username = sanitizeInput($_POST['username']);
+        $password = $_POST['password'];
+        $password2 = $_POST['password2'];
 
         // hash password menggunakan algoritma default PHP
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-        // persiapkan statement untuk mengecek apakah username sudah ada
-        $stmt_check = $conn->prepare("SELECT username FROM tbl_auth WHERE username = ?");
-        $stmt_check->execute([$username]);
+        // Persiapkan statement untuk mengecek apakah username sudah ada
+        $stmt_check = $conn->prepare("SELECT username FROM tbl_auth WHERE username = :username");
+        $stmt_check->bindParam(":username", $username);
+        $stmt_check->execute();
         $result = $stmt_check->fetch(PDO::FETCH_ASSOC);
 
-        // persiapkan statement untuk melakukan update username dan password
-        $stmt_update = $conn->prepare("UPDATE tbl_auth SET username = ?, password = ? WHERE username = ?");
-        $stmt_update->execute([$username, $password_hash, $username]);
+        // Persiapkan statement untuk melakukan update password berdasarkan field username
+        $stmt_update = $conn->prepare("UPDATE tbl_auth SET password = :password WHERE username = :username");
+        $stmt_update->bindParam(":password", $password_hash);
+        $stmt_update->bindParam(":username", $username);
+        $stmt_update->execute();
 
-        // cek apakah username tidak ada di database
+        // Cek apakah username tidak ada di database
         if ($result === false) {
 
-            // panggil fungsi tutupKoneksi dan tampilkan pesan gagal menggunakan SweetAlert
-            tutupKoneksi($conn);
-
+            // Tampilkan pesan 
             echo "<script>
         Swal.fire(
             'GAGAL',
-            'Username tidak ada. Lupa password gagal di ubah.',
+            'Proses ubah password gagal di lakukan.',
             'error'
         )
         </script>";
+
+            // Cek jika konfirmasi password tidak sesuai
         } else if ($password !== $password2) {
 
-            // tampilkan pesan gagal menggunakan SweetAlert jika password tidak sama dengan konfirmasi password
-            // dan tutup koneksi
-            tutupKoneksi($conn);
-
+            // Tampilkan pesan
             echo "<script>
         Swal.fire(
             'GAGAL',
-            'Maaf konfirmasi password tidak sesuai.',
+            'Maaf konfirmasi password Anda tidak sesuai.',
             'error'
         )
         </script>";
+
+            // Cek jika berhasil di update
         } else if ($stmt_update->rowCount() > 0) {
 
-            // panggil fungsi tutupKoneksi, set session success_change, dan redirect ke halaman login jika query update berhasil
-            tutupKoneksi($conn);
-
+            // Set session success_change, dan redirect ke halaman login
+            $_SESSION['forgot_username'] = $username;
+            $_SESSION['forgot_password'] = $password;
             $_SESSION['success_change'] = true;
             header('Location: login.php');
         }
+
+        // Tutup koneksi
+        $conn = null;
     }
     ?>
 
