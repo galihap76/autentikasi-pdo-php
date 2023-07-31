@@ -1,13 +1,13 @@
 <?php
 session_start();
-require_once 'db.php';
+include 'db.php';
 
-// cek jika sudah login
+// Cek jika sudah login
 if (isset($_SESSION['login'])) {
 
-    // paksa pengguna ke halaman index.php
+    // Paksa pengguna ke halaman index.php
     header('Location: index.php');
-    die();
+    exit();
 }
 ?>
 
@@ -37,46 +37,62 @@ if (isset($_SESSION['login'])) {
     // Mengecek apakah variabel $_POST['registrasi'] sudah di-set atau belum
     if (isset($_POST['registrasi'])) {
 
-        // Mengambil data username dan password dari form registrasi, dan menghilangkan tag HTML dan karakter aneh dengan fungsi strip_tags dan htmlentities
-        $username = strip_tags(htmlentities($_POST['username']));
-        $password = strip_tags(htmlentities($_POST['password']));
+        // Function sanitize input
+        function sanitizeInput($data)
+        {
+            $data = trim($data);
+            $data = stripslashes($data);
+            $data = htmlspecialchars($data);
+            return $data;
+        }
+
+        // Mengambil data username dan password dari form registrasi
+        $username = sanitizeInput($_POST['username']);
+        $password = $_POST['password'];
 
         // Meng-hash password dengan algoritma default
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-        // Query untuk mencari apakah username sudah ada di database
-        $sql = "SELECT username FROM tbl_auth WHERE username = ?";
+        // Mencari apakah username sudah ada di database
+        $sql = "SELECT username FROM tbl_auth WHERE username = :username";
         $stmt_check = $conn->prepare($sql);
-        $stmt_check->bindParam(1, $username);
+        $stmt_check->bindParam(":username", $username);
         $stmt_check->execute();
         $result = $stmt_check->fetch(PDO::FETCH_ASSOC);
 
         // Jika hasil query menghasilkan lebih dari 0 baris, artinya username sudah ada di database
         if ($stmt_check->rowCount() > 0) {
 
-            // Panggil fungsi tutupKoneksi() untuk menutup koneksi ke database, dan tampilkan pesan error dengan menggunakan library Swal
-            tutupKoneksi($conn);
+            // Tampilkan pesan
             echo "<script>
         Swal.fire(
             'GAGAL',
-            'Username sudah ada yang menggunakan.',
+            'Maaf proses registrasi Anda gagal di lakukan.',
             'error'
         )
         </script>";
+
+            // Jika username belum ada di database
         } else {
 
-            // Jika username belum ada di database, lakukan proses penyimpanan data registrasi ke database
-            $stmt_insert = $conn->prepare("INSERT INTO tbl_auth (username, password) VALUES (?, ?)");
-            $stmt_insert->bindParam(1, $username);
-            $stmt_insert->bindParam(2, $password_hash);
+            // Lakukan proses penyimpanan data registrasi ke database
+            $stmt_insert = $conn->prepare("INSERT INTO tbl_auth (username, password) VALUES (:username, :password)");
+            $stmt_insert->bindParam(":username", $username);
+            $stmt_insert->bindParam(":password", $password_hash);
 
-            // Jika proses penyimpanan berhasil, panggil fungsi tutupKoneksi() untuk menutup koneksi ke database, dan redirect ke halaman login.php
+            // Jika proses penyimpanan berhasil
             if ($stmt_insert->execute()) {
-                tutupKoneksi($conn);
+
+                // Set session dan alihkan ke halaman login
+                $_SESSION['username_register'] = $username;
+                $_SESSION['password_register'] = $password;
                 $_SESSION['success'] = true;
                 header('Location: login.php');
             }
         }
+
+        // Tutup koneksi
+        $conn = null;
     }
     ?>
 
