@@ -65,7 +65,7 @@ if (isset($_SESSION['login'])) {
                 // Mengatur cookie jika pengguna memilih opsi "remember me"
                 if ($remember == 'on') {
 
-                    // mengatur waktu kadaluarsa cookie 2 hari
+                    // Set cookie
                     $expire = time() + (2 * 24 * 60 * 60);
                     $secure = true;
                     $httponly = true;
