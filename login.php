@@ -78,7 +78,7 @@ if (isset($_SESSION['login'])) {
                 // Memeriksa jika password tidak sesuai
             } else {
 
-                // Menampilkan pesan error jika password yang dimasukkan salah
+                // Menampilkan pesan error jika password yang dimasukkan tidak sesuai
                 echo "<script>
             Swal.fire(
                 'GAGAL',
@@ -91,7 +91,7 @@ if (isset($_SESSION['login'])) {
             // Memeriksa apakah username tidak tersedia
         } else {
 
-            // Mnampilkan pesan error jika username tidak ditemukan
+            // Mnampilkan pesan error jika username tidak tersedia
             echo "<script>
             Swal.fire(
                 'GAGAL',
