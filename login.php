@@ -1,13 +1,13 @@
 <?php
 session_start();
-require_once 'db.php';
+include 'db.php';
 
-// cek jika sudah login
+// Cek jika sudah login
 if (isset($_SESSION['login'])) {
 
-    // paksa pengguna ke halaman index.php
+    // Paksa pengguna ke halaman index.php
     header('Location: index.php');
-    die();
+    exit();
 }
 ?>
 
@@ -35,49 +35,50 @@ if (isset($_SESSION['login'])) {
 
     <?php
 
-    // cek apakah tombol login telah diklik
+    // Cek apakah tombol login telah diklik
     if (isset($_POST['login'])) {
 
-        // mendapatkan nilai input dari form login
-        $username = strip_tags(htmlentities($_POST['username']));
-        $password = strip_tags(htmlentities($_POST['password']));
+        // Mendapatkan nilai input dari form login
+        $username = $_POST['username'];
+        $password = $_POST['password'];
+
+        // Untuk cek jika tombol remember me di tekan atau tidak
         $remember = isset($_POST['remember']) ? $_POST['remember'] : '';
 
-        // membuat prepared statement untuk mengambil data pengguna dari tabel database
-        $stmt = $conn->prepare("SELECT * FROM tbl_auth WHERE username = ?");
-        $stmt->execute([$username]);
+        // Membuat prepared statement untuk mengambil data dari tbl_auth
+        $stmt = $conn->prepare("SELECT * FROM tbl_auth WHERE username = :username");
+        $stmt->bindParam(":username", $username);
+        $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // memeriksa apakah username tersedia pada database
+        // Memeriksa apakah username tersedia pada database
         if ($result) {
 
-            // memeriksa apakah password yang dimasukkan sesuai dengan password di database
+            // Memeriksa apakah password yang dimasukkan sesuai dengan password di database
             if (password_verify($password, $result['password'])) {
 
-                // menyimpan nilai pada session untuk mengidentifikasi pengguna yang telah login
+                // Menyimpan nilai pada session untuk mengidentifikasi pengguna yang telah login
                 $_SESSION['username'] = $result['username'];
-                $_SESSION['identity'] = $result['username'];
+                $_SESSION['ID'] = $result['username'];
                 $_SESSION['login'] = true;
 
-                // mengatur cookie jika pengguna memilih opsi "remember me"
+                // Mengatur cookie jika pengguna memilih opsi "remember me"
                 if ($remember == 'on') {
 
                     // mengatur waktu kadaluarsa cookie 2 hari
                     $expire = time() + (2 * 24 * 60 * 60);
-                    setcookie('app', hash('sha512', 'app_home'), $expire, '/');
+                    $secure = true;
+                    $httponly = true;
+                    setcookie('app', hash('sha512', 'app_home'), $expire, '/', null, $secure, $httponly);
                 }
 
-                // tutup koneksi database
-                tutupKoneksi($conn);
-
-                // mengarahkan pengguna ke halaman index setelah login berhasil
+                // Mengarahkan pengguna ke halaman index setelah login berhasil
                 header("Location: index.php");
+
+                // Memeriksa jika password tidak sesuai
             } else {
 
-                // tutup koneksi database
-                tutupKoneksi($conn);
-
-                // menampilkan pesan error jika password yang dimasukkan salah
+                // Menampilkan pesan error jika password yang dimasukkan salah
                 echo "<script>
             Swal.fire(
                 'GAGAL',
@@ -86,26 +87,28 @@ if (isset($_SESSION['login'])) {
             )
             </script>";
             }
+
+            // Memeriksa apakah username tidak tersedia
         } else {
 
-            // tutup koneksi database
-            tutupKoneksi($conn);
-
-            // menampilkan pesan error jika username tidak ditemukan
+            // Mnampilkan pesan error jika username tidak ditemukan
             echo "<script>
             Swal.fire(
                 'GAGAL',
-                'Username tidak ditemukan. Silahkan coba lagi.',
+                'Login Anda tidak valid. Silakan coba lagi.',
                 'error'
             )
             </script>";
         }
+
+        // Tutup koneksi
+        $conn = null;
     }
 
-    // cek jika registrasi berhasil
+    // Cek jika registrasi berhasil
     if (isset($_SESSION['success'])) {
 
-        // beri pesan ke pengguna
+        // Beri pesan 
         echo "<script>
         Swal.fire(
             'BERHASIL!',
@@ -114,13 +117,13 @@ if (isset($_SESSION['login'])) {
         )
         </script>";
 
-        // hapus session success registrasi
+        // Hapus session success registrasi
         unset($_SESSION['success']);
 
-        // cek jika password berhasil di ubah
+        // Cek jika password berhasil di ubah
     } else if (isset($_SESSION['success_change'])) {
 
-        // beri pesan ke pengguna
+        // Beri pesan 
         echo "<script>
         Swal.fire(
             'BERHASIL!',
@@ -129,7 +132,7 @@ if (isset($_SESSION['login'])) {
         )
         </script>";
 
-        // hapus session success registrasi
+        // Hapus session success registrasi
         unset($_SESSION['success_change']);
     }
     ?>
@@ -159,17 +162,41 @@ if (isset($_SESSION['login'])) {
                             <!-- Form -->
                             <form method="post" action="">
 
+                                <?php
+                                $usernameValue = '';
+                                $passwordValue = '';
+
+                                if (!isset($_SESSION['username_register']) && !isset($_SESSION['forgot_username'])) {
+                                    $usernameValue = '';
+                                } else if (isset($_SESSION['username_register'])) {
+                                    $usernameValue = $_SESSION['username_register'];
+                                } else if (isset($_SESSION['forgot_username'])) {
+                                    $usernameValue = $_SESSION['forgot_username'];
+                                }
+
+                                if (!isset($_SESSION['password_register']) && !isset($_SESSION['forgot_password'])) {
+                                    $passwordValue = '';
+                                } else if (isset($_SESSION['password_register'])) {
+                                    $passwordValue = $_SESSION['password_register'];
+                                } else if (isset($_SESSION['forgot_password'])) {
+                                    $passwordValue = $_SESSION['forgot_password'];
+                                }
+
+                                ?>
+
                                 <!-- Username -->
                                 <div class="mb-4">
                                     <label class="form-label" for="username">Username</label>
-                                    <input type="text" id="username" class="form-control" name="username" autocomplete="off" required />
+
+                                    <input type="text" id="username" class="form-control" name="username" autocomplete="off" value="<?php echo $usernameValue; ?>" required />
+
                                 </div>
                                 <!-- </Akhir username -->
 
                                 <!-- Password -->
                                 <div class="mb-4">
                                     <label class="form-label" for="password">Password</label>
-                                    <input type="password" id="password" class="form-control" name="password" required />
+                                    <input type="password" id="password" class="form-control" name="password" value="<?php echo htmlspecialchars($passwordValue); ?>" required />
                                 </div>
                                 <!-- </Akhir password -->
 
