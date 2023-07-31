@@ -1,13 +1,21 @@
 <?php
 session_start();
 
+// Jika belum login
 if (!isset($_SESSION['login']) && !isset($_SESSION['username'])) {
+
+    // Paksa alihkan ke halaman login
     header('Location: login.php');
     die();
+
+    // Jika sudah login
 } else {
 
+    // Set session regenerate ID
     session_regenerate_id();
-    $identity_username = $_SESSION['identity'];
+
+    // Dan set session ID
+    $ID = $_SESSION['ID'];
 }
 ?>
 
@@ -24,7 +32,7 @@ if (!isset($_SESSION['login']) && !isset($_SESSION['username'])) {
 
 <body>
 
-    Nama pengguna Anda adalah : <?php echo $identity_username; ?>
+    Nama pengguna Anda adalah : <?php echo $ID; ?>
     <br>
     <br>
 
